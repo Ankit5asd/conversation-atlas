@@ -34,6 +34,14 @@ body{font-family:var(--sans);background:var(--paper);color:var(--ink);
 .brand .mark{width:26px;height:26px;border-radius:7px;background:var(--ink);color:var(--paper);
   display:grid;place-items:center;font-family:var(--serif);font-size:15px;font-style:italic}
 .topbar .meta{font-family:var(--mono);font-size:11px;color:var(--ink-mute)}
+.topbar-right{display:flex;align-items:center;gap:14px;flex-wrap:wrap;justify-content:flex-end}
+.dl-group{display:flex;gap:7px}
+.dl{font-family:var(--mono);font-size:11px;color:var(--ink-mute);background:var(--card);
+  border:1px solid var(--line);border-radius:7px;padding:6px 11px;cursor:pointer;letter-spacing:.02em;transition:all .15s}
+.dl:hover{color:var(--ink);border-color:var(--ink-faint);background:var(--paper)}
+.dl.primary{color:var(--teal-d);border-color:var(--teal-l)}
+.dl.primary:hover{background:rgba(29,158,117,.06);border-color:var(--teal)}
+@media(max-width:520px){.topbar{flex-wrap:wrap;gap:10px}.topbar-right{width:100%;justify-content:space-between}}
 .nav{position:sticky;top:0;z-index:20;background:var(--paper);padding:12px 0;margin-bottom:30px;
   border-bottom:1px solid var(--line-soft);display:flex;gap:6px;flex-wrap:wrap}
 .nav a{font-family:var(--mono);font-size:11px;color:var(--ink-mute);text-decoration:none;
@@ -216,4 +224,29 @@ body{font-family:var(--sans);background:var(--paper);color:var(--ink);
 
 @media (prefers-reduced-motion: reduce){
   .cbar,.m-fill,.hfill,.sb{transition:none}
+}
+
+/* ── Print / Save-as-PDF ──────────────────────────────────────────
+   Force a clean light layout regardless of OS dark mode, print the
+   bar colors, hide interactive chrome, and keep cards whole. */
+@media print{
+  :root{
+    --ink:#14161a;--ink-soft:#3d434d;--ink-mute:#767d89;--ink-faint:#9aa1ac;
+    --paper:#ffffff;--card:#ffffff;--line:#e2e0d9;--line-soft:#eeece6;
+    --teal:#1d9e75;--teal-d:#0f6e56;--teal-l:#9fe1cb;
+    --coral:#d85a30;--coral-l:#f0997b;--coral-p:#f5c4b3;
+    --amber:#ba7517;--amber-l:#ef9f27;--violet:#534ab7;--violet-l:#7f77dd;--violet-p:#cecbf6;
+    --pink:#d4537e;--blue:#185fa5;--blue-l:#378add;--blue-p:#b5d4f4;--shadow:none;
+  }
+  *{-webkit-print-color-adjust:exact !important;print-color-adjust:exact !important;box-shadow:none !important}
+  body{background:#fff;padding:0}
+  [data-noexport],.nav{display:none !important}
+  .shell{max-width:none}
+  .topbar{border-bottom:1px solid var(--line)}
+  .sec{margin-top:26px;page-break-inside:auto}
+  .finding,.fence,.audit,.stat,.mini{page-break-inside:avoid;break-inside:avoid}
+  .sec-head,.f-head{page-break-after:avoid}
+  .cbar,.m-fill,.hfill,.sb{transition:none !important}
+  .hero{margin-bottom:20px}
+  @page{margin:14mm}
 }

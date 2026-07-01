@@ -66,6 +66,18 @@ npm run preview    # preview the production build
 
 Nothing needs a backend. The whole app is a static bundle.
 
+### Export your results
+On the results screen: **Save as PDF** (opens on any phone — the reliable
+cross-device format), **View** (opens the report in a browser tab), or **JSON**
+(raw findings). Everything is generated in-browser and saved to your device.
+
+### Deploy (GitHub Pages)
+Pushing to `master` triggers `.github/workflows/deploy.yml`, which runs the
+tests, builds with the correct base path, and publishes to GitHub Pages —
+live at **https://ankit5asd.github.io/conversation-atlas/**. It's a static site,
+so it also drops onto Vercel / Netlify / Cloudflare Pages with zero config
+(build `npm run build`, output `dist`).
+
 ### Get your export
 - **ChatGPT** — Settings → Data controls → Export. Unzip and drop in
   `conversations.json`.
