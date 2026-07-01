@@ -1,0 +1,10 @@
+node_modules
+dist
+.DS_Store
+*.local
+.env
+.env.*
+
+# NEVER commit real chat exports — they are the user's private data.
+test-data/*.json
+!test-data/.gitkeep

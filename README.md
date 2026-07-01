@@ -1,0 +1,116 @@
+# Conversation Atlas
+
+An honest, evidence-based dashboard of **how you think out loud with AI** — built
+from your own exported chat history, analyzed **entirely in your browser**, and
+tagged by how much each finding can be trusted.
+
+Most "AI reads your chats" tools are dishonest: they slap personality labels on
+you, invent confidence scores, and claim to see a whole person from a partial
+sample. This is the disciplined opposite. The flow is always
+**Evidence → Models → Questions**, never *Evidence → Identity*. There is no point
+where it says "you are X." It says: here's what your data shows, here's how
+confident we are, here's what it might mean — **you** decide.
+
+> **Even this web app never sees your data.** Your export is read in-memory in
+> your browser and never uploaded. No account, no server, no storage.
+
+---
+
+## Status — Phase 1 (shipped)
+
+Solo, browser-only, deterministic core. No AI calls, no login, no database.
+
+- **Export parser** — ChatGPT (`conversations.json`) and Claude data exports.
+- **Deterministic extractors** — categories 1–4, 6, 7 (usage/timing, depth,
+  topic movement, anchors, decision signature, recurring subjects).
+- **Robustness / counterfactual tester** — remove-a-year math; findings that
+  collapse are **demoted**, not surfaced (shown as a refusal — that's the point).
+- **Ranking** — importance + novelty, so boring counts sink and change surfaces.
+- **Dashboard UI** — the 9-category design, tier tags, evidence meters, fenced
+  zones, engine self-audit.
+
+Categories **5** (language fingerprint) and **8** (fenced theories) are Phase 2 —
+they require a model call under the locked contract and are shown as locked until
+you add an API key. They are never faked.
+
+### Roadmap
+- **Phase 2** — interpretive layer (cat 5 + 8) via one API key; "show me why";
+  the ontology granularity slider.
+- **Phase 3** — packaged open-source local track (clone → `npm install` → run).
+- **Phase 4** — debate mode (2–3 models cross-critique; agreement = stronger
+  evidence, disagreement = shown as honest uncertainty).
+
+---
+
+## Run it
+
+```bash
+npm install
+npm run dev        # http://localhost:5173 — drop in your export
+npm run build      # static build to dist/ (deploy anywhere; Vercel-native)
+npm run preview    # preview the production build
+```
+
+Nothing needs a backend. The whole app is a static bundle.
+
+### Get your export
+- **ChatGPT** — Settings → Data controls → Export. Unzip and drop in
+  `conversations.json`.
+- **Claude** — Settings → Account → Export data.
+
+---
+
+## The honesty guardrails (baked into the engine, not the UI)
+
+1. **Evidence exposed** — every finding traces to real conversations.
+2. **Assumptions visible** — the topic ontology is a *chosen resolution*, shown
+   as such, not hidden fact.
+3. **Models revisable** — no conclusion is permanent; disagreement is new
+   evidence, not overwritten.
+4. **Uncertainty shown** — confidence is tiers + labeled bars, never `83.7%`.
+
+**Hard blocks:** no personality typing, no clinical labels, no fake-precision
+scores, no claims beyond AI-visible behavior, no third-party profiling, no
+un-fenced speculation, no sending your data anywhere.
+
+A subtle one, learned from real data: **hour-of-day is timezone-sensitive.** The
+engine computes timing in *your* local timezone (the browser's), and it refuses
+to convert a timing count into a "night owl / early bird" personality — that
+refusal is a visible feature.
+
+---
+
+## Testing — the oracle is the regression guard
+
+The engine is scored against an executable **oracle** (a port of
+`golden_observations_full.md`): for a known export it defines exactly what the
+engine must surface, demote, fence, and keep quiet.
+
+```bash
+npm test                       # portable mechanics tests + oracle (if data present)
+npm run verify-oracle -- path/to/conversations.json   # scored report on a real export
+```
+
+- `src/engine/__tests__/engine.test.ts` — deterministic mechanics on a synthetic
+  fixture (committed, no private data).
+- `src/engine/__tests__/oracle.test.ts` — runs against a **real** export placed
+  at `test-data/real-export.json` (git-ignored — private data never committed).
+  Skips cleanly if the file isn't there.
+
+A passing engine finds all must-surface items, demotes all must-demote items,
+never asserts a fenced guess as fact, and keeps low-value items low.
+
+---
+
+## Architecture
+
+```
+src/engine/        framework-independent core (parser, extractors, robustness,
+                   ranking, the locked contract) — the single source of truth
+src/ui/            thin React renderer over engine output (charts are hand-rolled
+                   CSS/SVG; no chart lib)
+scripts/           verify-oracle CLI
+```
+
+The engine core has zero UI dependencies, so the same logic powers the web app,
+the tests, and (Phase 3) the local track.
