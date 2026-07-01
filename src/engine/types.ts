@@ -52,6 +52,12 @@ export interface Observation {
   chart?: ChartSpec;
   /** raw numbers behind the finding, for "show me why" / debugging */
   data?: Record<string, unknown>;
+  /** set by the optional AI re-read pass — shown transparently, not merged into
+   *  the finding's own tier/claim. */
+  aiNote?: string;
+  aiSuggestedTier?: Tier;
+  /** true for findings produced by the AI layer (cat 5 interpretation, cat 8). */
+  fromAI?: boolean;
 }
 
 /** Full engine result handed to the UI. */
@@ -67,4 +73,24 @@ export interface AtlasResult {
   };
   observations: Observation[]; // ranked, all tiers
   byCategory: Record<number, Observation[]>;
+  /** Compact, privacy-conscious summary sent to the AI layer (aggregates +
+   *  sampled titles — never full transcripts). */
+  digest: {
+    sampleTitles: string[];
+    language: {
+      hedgingByYear: Record<number, number>;
+      should: number;
+      want: number;
+      why: number;
+      how: number;
+      what: number;
+    };
+  };
+}
+
+/** An AI-generated note attached to a deterministic finding (the "re-read"). */
+export interface AiCritique {
+  findingId: string;
+  note: string;
+  suggestedTier?: Tier; // shown transparently; never silently overwrites
 }

@@ -7,5 +7,5 @@ export default function App() {
   const [result, setResult] = useState<AtlasResult | null>(null);
 
   if (!result) return <Upload onResult={(r) => setResult(r)} />;
-  return <Dashboard result={result} onReset={() => setResult(null)} />;
+  return <Dashboard result={result} onReset={() => setResult(null)} onEnriched={setResult} />;
 }

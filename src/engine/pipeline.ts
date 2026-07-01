@@ -3,6 +3,7 @@
 
 import type { AtlasResult, Conversation, Observation } from "./types";
 import { buildCtx, localClock, type Clock, extractOverview, extractDepth, extractMovement, extractHeld, extractDecisions, extractRecurring, extractAudit } from "./extractors";
+import { extractLanguage, computeLanguage } from "./language";
 import { rank } from "./ranking";
 
 export interface AnalyzeOptions {
@@ -23,6 +24,7 @@ export function analyze(conversations: Conversation[], opts: AnalyzeOptions = {}
     ...extractHeld(ctx),
     ...extractDecisions(ctx),
     ...extractRecurring(ctx),
+    ...extractLanguage(ctx),
     ...extractAudit(),
   ];
   rank(observations); // mutates score in place
@@ -33,6 +35,9 @@ export function analyze(conversations: Conversation[], opts: AnalyzeOptions = {}
 
   const perYear: Record<number, number> = {};
   for (const y of ctx.years) perYear[y] = ctx.byYear[y].length;
+
+  const sampleTitles = [...dated].sort((a, b) => b.turns - a.turns).slice(0, 40).map((c) => c.title).filter(Boolean);
+  const language = computeLanguage(ctx);
 
   const times = dated.map((c) => c.createTime!).filter((t) => t != null).sort((a, b) => a - b);
   const fmt = (t: number) => new Date(t * 1000).toISOString().slice(0, 10);
@@ -51,5 +56,6 @@ export function analyze(conversations: Conversation[], opts: AnalyzeOptions = {}
     },
     observations,
     byCategory,
+    digest: { sampleTitles, language },
   };
 }

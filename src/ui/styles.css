@@ -181,6 +181,39 @@ body{font-family:var(--sans);background:var(--paper);color:var(--ink);
 .locked b{color:var(--violet);font-family:var(--mono);font-size:11px;letter-spacing:.08em;
   text-transform:uppercase;display:block;margin-bottom:6px}
 
+/* fenced theory card (AI, cat 8) */
+.finding.theory{border-style:dashed;border-color:var(--violet-l);box-shadow:none}
+.theory .conf-dots i.on{background:var(--violet-l)}
+.fromai{font-family:var(--mono);font-size:10px;letter-spacing:.08em;text-transform:uppercase;
+  color:var(--violet-l);border:1px solid var(--violet-p);border-radius:100px;padding:2px 8px;margin-top:3px}
+
+/* AI critique note attached to a deterministic finding */
+.ai-note{margin-top:16px;padding:13px 15px;background:rgba(83,74,183,.06);border:1px solid var(--violet-p);
+  border-radius:10px;font-size:13px;color:var(--ink-soft);line-height:1.55}
+.ai-note .who{font-family:var(--mono);font-size:10px;letter-spacing:.08em;text-transform:uppercase;
+  color:var(--violet);margin-bottom:5px;display:flex;align-items:center;gap:7px}
+.ai-note .retier{background:var(--line);color:var(--ink-mute);border-radius:5px;padding:1px 7px;font-size:10px}
+
+/* AI key panel */
+.aipanel{background:var(--card);border:1px solid var(--line);border-radius:var(--r);
+  padding:20px 22px;margin-bottom:16px;box-shadow:var(--shadow)}
+.aipanel .ap-head{display:flex;align-items:center;gap:9px;font-family:var(--serif);font-size:17px;margin-bottom:4px}
+.aipanel .ap-sub{font-size:13px;color:var(--ink-mute);margin-bottom:16px;line-height:1.55;max-width:60ch}
+.ap-grid{display:flex;gap:10px;flex-wrap:wrap;align-items:flex-end}
+.ap-field{display:flex;flex-direction:column;gap:5px}
+.ap-field.grow{flex:1;min-width:170px}
+.ap-field label{font-family:var(--mono);font-size:10.5px;letter-spacing:.03em;color:var(--ink-mute);text-transform:uppercase}
+.ap-field input,.ap-field select{font-family:var(--sans);font-size:13.5px;padding:9px 11px;border:1px solid var(--line);
+  border-radius:9px;background:var(--paper);color:var(--ink);min-width:130px}
+.ap-field input:focus,.ap-field select:focus{outline:none;border-color:var(--violet-l)}
+.ap-run{font-family:var(--sans);font-size:14px;font-weight:500;padding:10px 20px;border:0;border-radius:9px;
+  background:var(--violet);color:#fff;cursor:pointer;white-space:nowrap}
+.ap-run:disabled{opacity:.55;cursor:default}
+.ap-note{margin-top:13px;font-size:11.5px;color:var(--ink-mute);display:flex;gap:8px;align-items:flex-start;line-height:1.5}
+.ap-note svg{width:14px;height:14px;flex-shrink:0;color:var(--teal-d);margin-top:1px}
+.ap-err{margin-top:13px;font-size:12.5px;color:var(--coral);background:rgba(216,90,48,.08);
+  border:1px solid var(--coral-p);border-radius:9px;padding:10px 13px;word-break:break-word}
+
 @media (prefers-reduced-motion: reduce){
   .cbar,.m-fill,.hfill,.sb{transition:none}
 }
