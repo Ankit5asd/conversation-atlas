@@ -3,7 +3,7 @@
 // test-data/real-export.json (git-ignored — private data never leaves your disk).
 // On any other machine it skips cleanly, so CI stays green without the data.
 
-import { describe, it, expect } from "vitest";
+import { describe, it, expect, beforeAll } from "vitest";
 import { existsSync, readFileSync } from "node:fs";
 import { resolve } from "node:path";
 import { analyze, parseExport, type AtlasResult } from "../index";
@@ -18,9 +18,12 @@ suite("ORACLE — real export scored against golden_observations_full.md", () =>
   let result: AtlasResult;
   const obs = (id: string) => result.observations.find((o) => o.id === id);
 
-  // Load once. UTC clock to reproduce the reference numbers.
-  const { conversations } = parseExport(JSON.parse(readFileSync(DATA_PATH, "utf-8")));
-  result = analyze(conversations, { clock: utcClock });
+  // Load inside beforeAll so a skipped suite never touches the (absent) file —
+  // the describe body still runs at collection time even when skipped.
+  beforeAll(() => {
+    const { conversations } = parseExport(JSON.parse(readFileSync(DATA_PATH, "utf-8")));
+    result = analyze(conversations, { clock: utcClock });
+  });
 
   it("parses the documented volume: 17 / 120 / 329 / 127 across 2023–2026", () => {
     expect(result.meta.total).toBe(593);
