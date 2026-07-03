@@ -1,15 +1,18 @@
+import { useEffect, useState } from "react";
 import type { AtlasResult, Observation } from "../../engine";
-import { CATEGORIES } from "../../engine";
-import { FindingCard } from "./FindingCard";
+import { CATEGORIES, ONTOLOGY } from "../../engine";
+import { FindingCard, type FeedbackVal } from "./FindingCard";
 import { AiPanel } from "./AiPanel";
 import { viewReport, printReport, exportJSON } from "../export";
+import { useReveal } from "../hooks";
 
 const SYSTEM_NAME = "Conversation Atlas";
 
 function AuditPanel({ o }: { o: Observation }) {
+  const { ref, inView } = useReveal<HTMLDivElement>();
   const rows = (o.data?.rows as { k: string; kind: string; t: string }[]) ?? [];
   return (
-    <div className="audit">
+    <div ref={ref} className={`audit reveal${inView ? " in" : ""}`}>
       {rows.map((r, i) => (
         <div className="audit-row" key={i}>
           <span className={`audit-k ak-${r.kind}`}>{r.k}</span>
@@ -20,8 +23,60 @@ function AuditPanel({ o }: { o: Observation }) {
   );
 }
 
+/** The story first: the three strongest findings, before the deep dive. */
+function Takeaways({ result }: { result: AtlasResult }) {
+  const top = [...result.observations]
+    .filter((o) => o.tier === "solid" || o.tier === "surprising")
+    .sort((a, b) => b.score - a.score)
+    .slice(0, 3);
+  if (top.length < 2) return null;
+  return (
+    <div className="takeaways">
+      <div className="tk-label">If you remember three things</div>
+      <div className="tk-grid">
+        {top.map((o, i) => (
+          <a key={o.id} className="tk" href={`#${CATEGORIES[o.category].key}`}>
+            <span className="tk-num">{String(i + 1).padStart(2, "0")}</span>
+            <span className="tk-title">{o.title}</span>
+            <span className="tk-cat">{CATEGORIES[o.category].title} ↓</span>
+          </a>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+/** Guardrail 2 — assumptions visible: the exact keywords behind each topic. */
+function Assumptions() {
+  const [open, setOpen] = useState(false);
+  const words = (rx: RegExp) => rx.source.replace(/\\b/g, "").replace(/[()]/g, "").split("|").join(" · ");
+  return (
+    <div className="assume">
+      <button className="why-btn" data-noexport onClick={() => setOpen((v) => !v)}>
+        {open ? "− Hide the topic assumptions" : "⚙ Inspect the topic assumptions"}
+      </button>
+      {open && (
+        <div className="assume-body">
+          <p>
+            Every "topic" above is a keyword bucket — a <b>chosen resolution, not a fact about you</b>. A conversation counts toward a topic if your words match any of these. Change the words and the story shifts; that's exactly why we show them.
+          </p>
+          {Object.entries(ONTOLOGY).map(([t, rx]) => (
+            <div className="assume-row" key={t}>
+              <b>{t}</b>
+              <span>{words(rx)}</span>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
 export function Dashboard({ result, onReset, onEnriched }: { result: AtlasResult; onReset: () => void; onEnriched: (r: AtlasResult) => void }) {
   const { meta, byCategory } = result;
+  const [feedback, setFeedback] = useState<Record<string, FeedbackVal>>({});
+  const [active, setActive] = useState("");
+
   const growth = byCategory[2]?.find((o) => o.id === "DEPTH_GROWTH");
   const growthX = (growth?.data?.growth as number) ?? null;
   const timing = byCategory[1]?.find((o) => o.id === "OVERVIEW_TIMING");
@@ -30,6 +85,25 @@ export function Dashboard({ result, onReset, onEnriched }: { result: AtlasResult
   const deepestTurns = (deepest?.data?.turns as number) ?? null;
 
   const sectionsOrder = [1, 2, 3, 4, 5, 6, 7, 8, 9];
+
+  // Highlight the section currently being read.
+  useEffect(() => {
+    const secs = document.querySelectorAll("section.sec");
+    const io = new IntersectionObserver(
+      (es) => es.forEach((e) => e.isIntersecting && setActive((e.target as HTMLElement).id)),
+      { rootMargin: "-35% 0px -55% 0px" },
+    );
+    secs.forEach((s) => io.observe(s));
+    return () => io.disconnect();
+  }, []);
+
+  const giveFeedback = (id: string, v: FeedbackVal) =>
+    setFeedback((f) => {
+      const n = { ...f };
+      if (n[id] === v) delete n[id];
+      else n[id] = v;
+      return n;
+    });
 
   return (
     <div className="shell">
@@ -49,7 +123,7 @@ export function Dashboard({ result, onReset, onEnriched }: { result: AtlasResult
             <button className="dl" onClick={() => viewReport(result)} title="Open your report in a new browser tab">
               ⤢ View
             </button>
-            <button className="dl" onClick={() => exportJSON(result)} title="Export the raw findings as JSON">
+            <button className="dl" onClick={() => exportJSON(result, feedback)} title="Export the raw findings (and your theory verdicts) as JSON">
               JSON
             </button>
           </div>
@@ -58,7 +132,7 @@ export function Dashboard({ result, onReset, onEnriched }: { result: AtlasResult
 
       <nav className="nav">
         {sectionsOrder.map((n) => (
-          <a key={n} href={`#${CATEGORIES[n].key}`}>
+          <a key={n} href={`#${CATEGORIES[n].key}`} className={active === CATEGORIES[n].key ? "active" : ""}>
             {CATEGORIES[n].title}
           </a>
         ))}
@@ -109,6 +183,8 @@ export function Dashboard({ result, onReset, onEnriched }: { result: AtlasResult
         </div>
       </div>
 
+      <Takeaways result={result} />
+
       {sectionsOrder.map((n) => {
         const cat = CATEGORIES[n];
         const items = byCategory[n] ?? [];
@@ -135,7 +211,8 @@ export function Dashboard({ result, onReset, onEnriched }: { result: AtlasResult
             )}
             {isAudit
               ? items.map((o) => <AuditPanel o={o} key={o.id} />)
-              : items.map((o) => <FindingCard o={o} key={o.id} />)}
+              : items.map((o) => <FindingCard o={o} key={o.id} fb={feedback[o.id]} onFeedback={giveFeedback} />)}
+            {n === 3 && <Assumptions />}
             {isAudit && (
               <p className="footnote">
                 <b>How to read this.</b> Every finding is tagged by how much to trust it. <b>Solid</b> findings are measured and survive testing. <b>Surprising</b> ones are real but worth a second look. <b>Context</b> is true background. <b>Demoted</b> items are things the engine found but refused to claim. <b>Theories</b> (with a key) are guesses that end in a question — because you decide if they fit. All of it sees only your AI conversations, never your whole life.

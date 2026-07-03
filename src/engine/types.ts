@@ -36,6 +36,13 @@ export type ChartSpec =
   | { kind: "hbars"; bars: { label: string; value: number; max: number; display: string; color: string }[]; caption: string; captionColor?: string }
   | { kind: "mini"; items: { name: string; badge: string; badgeKind: string; vals: number[]; color: string }[]; caption: string };
 
+/** A concrete conversation behind a finding — the "show me why" receipts. */
+export interface ExampleConvo {
+  title: string;
+  date: string; // e.g. "May 2025"
+  turns: number;
+}
+
 /** A single finding produced by the engine. */
 export interface Observation {
   id: string;
@@ -52,6 +59,8 @@ export interface Observation {
   chart?: ChartSpec;
   /** raw numbers behind the finding, for "show me why" / debugging */
   data?: Record<string, unknown>;
+  /** the actual conversations behind the finding — evidence exposed */
+  examples?: ExampleConvo[];
   /** set by the optional AI re-read pass — shown transparently, not merged into
    *  the finding's own tier/claim. */
   aiNote?: string;

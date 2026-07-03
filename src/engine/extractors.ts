@@ -22,6 +22,13 @@ const DAY_NAMES = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Frid
 // helpers ---------------------------------------------------------------------
 const pct = (n: number, d: number) => (d ? (100 * n) / d : 0);
 const round1 = (n: number) => Math.round(n * 10) / 10;
+/** "Show me why" receipt: title · month-year · turn count. Titles only — never message text. */
+const asExample = (c: Conversation) => ({
+  title: c.title || "(untitled)",
+  date: c.createTime ? new Date(c.createTime * 1000).toLocaleDateString("en-US", { month: "short", year: "numeric" }) : "",
+  turns: c.turns,
+});
+const deepestFirst = (arr: Conversation[]) => [...arr].sort((a, b) => b.turns - a.turns);
 
 export interface Ctx {
   convos: Conversation[];
@@ -67,6 +74,7 @@ export function extractOverview(ctx: Ctx): Observation[] {
       caption: "Conversations per year",
     },
     data: { perYear },
+    examples: deepestFirst(byYear[maxYear]).slice(0, 4).map(asExample),
   });
 
   // 1b. Overall counting facts — true but quiet (rank-low).
@@ -178,6 +186,8 @@ export function extractDepth(ctx: Ctx): Observation[] {
       caption: "Average back-and-forth turns per conversation, by year",
     },
     data: { avgByYear, growth, monotonic: trend.monotonic },
+    // the deepest thread of each year — the growth arc in real conversations
+    examples: years.map((y) => asExample(deepestFirst(byYear[y])[0])),
   });
 
   // 2b. Depth is BROAD, not just coding — kills the "just started coding" story.
@@ -306,6 +316,11 @@ export function extractMovement(ctx: Ctx): Observation[] {
         caption: `${top.topic} as a share of your conversations, by year`,
       },
       data: { pcts: top.pcts, spread: top.spread },
+      examples: (() => {
+        const rxTop = ONTOLOGY[top.topic];
+        const peakYear = years.reduce((a, b) => (top.pcts[b] >= top.pcts[a] ? b : a), years[0]);
+        return deepestFirst(byYear[peakYear].filter((c) => rxTop.test(c.text))).slice(0, 4).map(asExample);
+      })(),
     });
   }
 
@@ -332,6 +347,7 @@ export function extractMovement(ctx: Ctx): Observation[] {
         caption: `${code.topic} as a share of your conversations, by year`,
       },
       data: { pcts: code.pcts },
+      examples: deepestFirst(byYear[lastYear].filter((c) => ONTOLOGY[code.topic].test(c.text))).slice(0, 4).map(asExample),
     });
   }
 
@@ -405,6 +421,11 @@ export function extractHeld(ctx: Ctx): Observation[] {
         captionColor: "var(--ink-faint)",
       },
       data: { solid, demoted },
+      // one receipt per anchor: its single deepest conversation, ever
+      examples: solid.map((a) => {
+        const best = deepestFirst(convos.filter((c) => ONTOLOGY[a.topic].test(c.text)))[0];
+        return { ...asExample(best), title: `${a.topic} — ${best.title || "(untitled)"}` };
+      }),
     });
   }
 
@@ -486,6 +507,7 @@ export function extractDecisions(ctx: Ctx): Observation[] {
         captionColor: "var(--teal-d)",
       },
       data: { decisions: decisions.map((c) => ({ title: c.title, turns: c.turns })) },
+      examples: decisions.map(asExample),
     },
   ];
 }
@@ -527,6 +549,7 @@ export function extractRecurring(ctx: Ctx): Observation[] {
         caption: "Most frequent meaningful words in your conversation titles",
       },
       data: { top },
+      examples: deepestFirst(convos.filter((c) => c.title.toLowerCase().includes(top[0][0]))).slice(0, 6).map(asExample),
     },
   ];
 }

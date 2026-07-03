@@ -222,8 +222,68 @@ body{font-family:var(--sans);background:var(--paper);color:var(--ink);
 .ap-err{margin-top:13px;font-size:12.5px;color:var(--coral);background:rgba(216,90,48,.08);
   border:1px solid var(--coral-p);border-radius:9px;padding:10px 13px;word-break:break-word}
 
+/* ── reading flow: scroll reveal ─────────────────────────────────── */
+.reveal{opacity:0;transform:translateY(14px);transition:opacity .55s ease,transform .55s cubic-bezier(.22,1,.36,1)}
+.reveal.in{opacity:1;transform:none}
+
+/* nav: active section + one scrollable row on mobile */
+.nav a.active{background:var(--card);color:var(--ink)}
+@media(max-width:640px){
+  .nav{flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none}
+  .nav::-webkit-scrollbar{display:none}
+  .nav a{white-space:nowrap;flex-shrink:0}
+}
+
+/* ── takeaways strip ─────────────────────────────────────────────── */
+.takeaways{margin:26px 0 6px;border:1px solid var(--line);border-radius:var(--r);
+  background:var(--card);box-shadow:var(--shadow);padding:20px 22px}
+.tk-label{font-family:var(--mono);font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;
+  color:var(--ink-mute);margin-bottom:14px}
+.tk-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:18px}
+@media(max-width:640px){.tk-grid{grid-template-columns:1fr}}
+.tk{text-decoration:none;display:flex;flex-direction:column;gap:6px;padding-left:14px;border-left:2px solid var(--teal)}
+.tk:nth-child(2){border-left-color:var(--coral)}
+.tk:nth-child(3){border-left-color:var(--violet)}
+.tk-num{font-family:var(--mono);font-size:11px;color:var(--ink-faint)}
+.tk-title{font-family:var(--serif);font-size:17px;font-weight:500;line-height:1.3;color:var(--ink);letter-spacing:-.01em}
+.tk-cat{font-size:11.5px;color:var(--ink-mute)}
+.tk:hover .tk-title{color:var(--teal-d)}
+
+/* ── "show me why" evidence receipts ─────────────────────────────── */
+.why{margin-top:16px}
+.why-btn{font-family:var(--mono);font-size:11px;color:var(--ink-mute);background:none;
+  border:1px solid var(--line);border-radius:7px;padding:6px 12px;cursor:pointer;
+  letter-spacing:.02em;transition:all .15s}
+.why-btn:hover{color:var(--ink);border-color:var(--ink-faint)}
+.why-list{list-style:none;margin-top:10px;border-top:1px solid var(--line-soft)}
+.why-list li{display:flex;justify-content:space-between;gap:14px;align-items:baseline;
+  padding:8px 2px;border-bottom:1px solid var(--line-soft);font-size:13px}
+.why-title{color:var(--ink-soft);line-height:1.4}
+.why-meta{font-family:var(--mono);font-size:11px;color:var(--ink-mute);white-space:nowrap}
+
+/* ── theory feedback ─────────────────────────────────────────────── */
+.actions{display:flex;gap:9px;flex-wrap:wrap;margin-top:18px}
+.btn{font-family:var(--sans);font-size:13px;font-weight:500;padding:8px 14px;background:transparent;
+  border:1px solid var(--line);border-radius:9px;cursor:pointer;color:var(--ink-soft);transition:all .15s}
+.btn:hover{border-color:var(--ink-faint);color:var(--ink)}
+.btn.sel{border-color:var(--teal);color:var(--teal-d);background:rgba(29,158,117,.07)}
+.fb-note{margin-top:12px;font-family:var(--mono);font-size:11px;color:var(--violet)}
+
+/* ── assumptions inspector ───────────────────────────────────────── */
+.assume{margin:4px 0 8px}
+.assume-body{margin-top:12px;background:var(--card);border:1px dashed var(--line);
+  border-radius:var(--r);padding:18px 20px}
+.assume-body p{font-size:13px;color:var(--ink-soft);margin-bottom:14px;max-width:62ch;line-height:1.6}
+.assume-body p b{color:var(--ink)}
+.assume-row{display:flex;gap:14px;padding:7px 0;border-bottom:1px solid var(--line-soft);
+  font-size:12.5px;align-items:baseline}
+.assume-row:last-child{border-bottom:0}
+.assume-row b{width:80px;flex-shrink:0;font-weight:500;color:var(--ink)}
+.assume-row span{font-family:var(--mono);font-size:11px;color:var(--ink-mute);line-height:1.7}
+
 @media (prefers-reduced-motion: reduce){
   .cbar,.m-fill,.hfill,.sb{transition:none}
+  .reveal{opacity:1;transform:none;transition:none}
 }
 
 /* ── Print / Save-as-PDF ──────────────────────────────────────────
@@ -241,6 +301,7 @@ body{font-family:var(--sans);background:var(--paper);color:var(--ink);
   *{-webkit-print-color-adjust:exact !important;print-color-adjust:exact !important;box-shadow:none !important}
   body{background:#fff;padding:0}
   [data-noexport],.nav{display:none !important}
+  .reveal{opacity:1 !important;transform:none !important}
   .shell{max-width:none}
   .topbar{border-bottom:1px solid var(--line)}
   .sec{margin-top:26px;page-break-inside:auto}

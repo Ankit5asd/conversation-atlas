@@ -99,6 +99,23 @@ describe("timing (category 1) — no stereotype", () => {
   });
 });
 
+describe("show me why — evidence receipts", () => {
+  it("flagship findings carry the actual conversations behind them", () => {
+    const g = obs("DEPTH_GROWTH")!;
+    expect(g.examples).toHaveLength(4); // one deepest thread per year
+    expect(g.examples![0].turns).toBeGreaterThan(0);
+    const r = obs("RECURRING_TITLE_WORDS")!;
+    expect(r.examples!.length).toBeGreaterThan(0);
+    expect(r.examples!.every((e) => e.title.toLowerCase().includes("analysis"))).toBe(true);
+  });
+
+  it("anchor receipts name the topic they evidence", () => {
+    const a = obs("HELD_ANCHORS")!;
+    expect(a.examples!.length).toBeGreaterThanOrEqual(3);
+    expect(a.examples!.some((e) => e.title.startsWith("Business — "))).toBe(true);
+  });
+});
+
 describe("no hard-block violations leak through", () => {
   it("no observation asserts a personality/clinical label as a finding", () => {
     const banned = /\b(you are an?|you're an?)\s+(intj|entp|introvert|extrovert|adhd|anxious type|night owl)\b/i;

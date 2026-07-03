@@ -42,6 +42,8 @@ function buildReportHTML(result: AtlasResult): string {
   if (!shell) return "";
   const clone = shell.cloneNode(true) as HTMLElement;
   clone.querySelectorAll("[data-noexport]").forEach((n) => n.remove()); // strip interactive controls
+  // Below-fold cards may not have scroll-revealed yet — force them visible.
+  clone.querySelectorAll(".reveal").forEach((n) => n.classList.add("in"));
 
   const css = collectCss();
   const stamp = `${result.meta.total} conversations · ${result.meta.dateRange.start} → ${result.meta.dateRange.end} · exported ${today()}`;
@@ -96,10 +98,12 @@ export function printReport() {
   window.print();
 }
 
-/** Raw findings — portable, re-importable. Shares on mobile, downloads on desktop. */
-export async function exportJSON(result: AtlasResult) {
+/** Raw findings — portable, re-importable. Shares on mobile, downloads on desktop.
+ *  The user's theory verdicts ride along: disagreement is evidence, so it's kept. */
+export async function exportJSON(result: AtlasResult, userFeedback?: Record<string, string>) {
   const name = `conversation-atlas-${today()}.json`;
-  const json = JSON.stringify(result, null, 2);
+  const payload = userFeedback && Object.keys(userFeedback).length ? { ...result, userFeedback } : result;
+  const json = JSON.stringify(payload, null, 2);
   const file = new File([json], name, { type: "application/json" });
   if (canShareFiles(file)) {
     try {
