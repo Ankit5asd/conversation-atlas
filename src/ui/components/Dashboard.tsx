@@ -72,7 +72,7 @@ function Assumptions() {
   );
 }
 
-export function Dashboard({ result, onReset, onEnriched }: { result: AtlasResult; onReset: () => void; onEnriched: (r: AtlasResult) => void }) {
+export function Dashboard({ result, onReset, onEnriched, demoMode }: { result: AtlasResult; onReset: () => void; onEnriched: (r: AtlasResult) => void; demoMode?: boolean }) {
   const { meta, byCategory } = result;
   const [feedback, setFeedback] = useState<Record<string, FeedbackVal>>({});
   const [active, setActive] = useState("");
@@ -130,6 +130,17 @@ export function Dashboard({ result, onReset, onEnriched }: { result: AtlasResult
         </div>
       </div>
 
+      {demoMode && (
+        <div className="demo-banner">
+          <span>
+            <b>Sample data.</b> This is a fictional student's three years of AI chats — not you, not any real person. Load your own export to see your real atlas.
+          </span>
+          <button className="demo-btn" data-noexport onClick={onReset}>
+            Analyze my own →
+          </button>
+        </div>
+      )}
+
       <nav className="nav">
         {sectionsOrder.map((n) => (
           <a key={n} href={`#${CATEGORIES[n].key}`} className={active === CATEGORIES[n].key ? "active" : ""}>
@@ -142,7 +153,7 @@ export function Dashboard({ result, onReset, onEnriched }: { result: AtlasResult
       </nav>
 
       <header className="hero">
-        <div className="eyebrow">Your full results</div>
+        <div className="eyebrow">{demoMode ? "Sample results — a fictional student" : "Your full results"}</div>
         <h1>
           How you think out loud
           <br />

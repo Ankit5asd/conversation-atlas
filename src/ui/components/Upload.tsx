@@ -1,9 +1,9 @@
 import { useRef, useState } from "react";
-import { parseExport, analyze, type AtlasResult } from "../../engine";
+import { parseExport, analyze, buildDemoConversations, type AtlasResult } from "../../engine";
 
 const SYSTEM_NAME = "Conversation Atlas";
 
-export function Upload({ onResult }: { onResult: (r: AtlasResult, name: string) => void }) {
+export function Upload({ onResult, onDemo }: { onResult: (r: AtlasResult, name: string) => void; onDemo: (r: AtlasResult) => void }) {
   const [over, setOver] = useState(false);
   const [busy, setBusy] = useState<string | null>(null);
   const [err, setErr] = useState<string | null>(null);
@@ -69,6 +69,13 @@ export function Upload({ onResult }: { onResult: (r: AtlasResult, name: string) 
           <p>ChatGPT: Settings → Data controls → Export → the <b>conversations.json</b> inside the zip.</p>
           <p>Claude: Settings → Account → Export data.</p>
           <button className="pick" type="button">Choose a file</button>
+        </div>
+
+        <div className="demo-row">
+          <span>No export handy?</span>
+          <button className="demo-btn" onClick={() => onDemo(analyze(buildDemoConversations()))}>
+            See a sample atlas →
+          </button>
         </div>
 
         {busy && <div className="busy">{busy}</div>}

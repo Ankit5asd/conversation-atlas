@@ -5,4 +5,5 @@ export { analyze, type AnalyzeOptions } from "./pipeline";
 export { CATEGORIES, TIER_META, ONTOLOGY, CONFIDENCE_CEILING } from "./contract";
 export { localClock, type Clock } from "./extractors";
 export { computeLanguage, type LanguageMetrics } from "./language";
+export { buildDemoConversations } from "./demo";
 export type { AiCritique, ExampleConvo } from "./types";
